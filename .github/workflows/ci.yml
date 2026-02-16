@@ -19,23 +19,9 @@ jobs:
 
       - run: npm ci
       - run: npm run lint
-      - run: npm run test:coverage
+      - name: Run tests with coverage (fails if below 90% threshold)
+        run: npm run test:coverage
       - run: npm run build
-
-      - name: Check coverage threshold
-        run: |
-          # Parse coverage summary from vitest output
-          npx vitest run --coverage 2>&1 | tee coverage-output.txt
-          # Fail if coverage drops below 90%
-          if grep -E "All files\s*\|" coverage-output.txt | awk -F'|' '{
-            split($2, a, " ");
-            if (a[1]+0 < 90) exit 1;
-          }'; then
-            echo "Coverage check passed"
-          else
-            echo "Coverage below 90% threshold"
-            exit 1
-          fi
 
   deploy:
     needs: test
