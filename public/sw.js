@@ -1,4 +1,4 @@
-const CACHE_NAME = 'epic-stonks-v1';
+const CACHE_NAME = 'epic-stonks-__COMMIT_HASH__';
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
