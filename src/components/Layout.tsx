@@ -1,5 +1,4 @@
 import { NavLink, Outlet } from 'react-router-dom';
-import { APP_VERSION } from '../version';
 
 const navItems = [
   { to: '/', label: 'Dashboard', icon: '◈' },
@@ -13,7 +12,6 @@ export function Layout() {
     <div className="app-layout">
       <header className="app-header">
         <h1>Stonks</h1>
-        <span className="app-version">{APP_VERSION}</span>
       </header>
       <main className="app-main">
         <Outlet />

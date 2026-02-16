@@ -7,6 +7,7 @@ import {
   exportPortfolioToJson,
   mergePortfolios,
 } from '../services/import-export';
+import { APP_VERSION } from '../version';
 
 export function ConfigPage() {
   const { loading } = usePortfolio();
@@ -19,6 +20,7 @@ export function ConfigPage() {
       <StockPriceManager />
       <hr />
       <ImportExport />
+      <p className="app-version-footer">Build {APP_VERSION}</p>
     </div>
   );
 }
