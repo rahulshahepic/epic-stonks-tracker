@@ -6,7 +6,7 @@ import { readFileSync, writeFileSync } from 'fs';
 import { resolve } from 'path';
 
 function getCommitHash(): string {
-  if (process.env.COMMIT_HASH) return process.env.COMMIT_HASH;
+  if (process.env.COMMIT_HASH) return process.env.COMMIT_HASH.slice(0, 7);
   try {
     return execSync('git rev-parse --short HEAD').toString().trim();
   } catch {
