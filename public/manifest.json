@@ -4,8 +4,8 @@
   "description": "Track the net value of your Epic stock grants, loans, and vesting schedules.",
   "start_url": "/epic-stonks-tracker/",
   "display": "standalone",
-  "background_color": "#f5f5f5",
-  "theme_color": "#2563eb",
+  "background_color": "#0c0c0e",
+  "theme_color": "#16161a",
   "icons": [
     {
       "src": "icon-192.png",

@@ -108,7 +108,7 @@ describe('Layout', () => {
     renderWithProviders(
       <Layout />
     );
-    expect(screen.getByText('Epic Stonks Tracker')).toBeInTheDocument();
+    expect(screen.getByText('Stonks')).toBeInTheDocument();
   });
 
   it('renders navigation links', () => {
@@ -125,8 +125,9 @@ describe('Layout', () => {
     renderWithProviders(
       <Layout />
     );
-    const dashLink = screen.getByText('Dashboard');
-    expect(dashLink.tagName).toBe('A');
+    const dashLabel = screen.getByText('Dashboard');
+    // Text is inside a <span> inside an <a> (NavLink)
+    expect(dashLabel.closest('a')).toBeTruthy();
   });
 });
 
@@ -911,7 +912,7 @@ describe('App', () => {
   it('renders the full application', async () => {
     render(<App />);
     await waitFor(() => {
-      expect(screen.getByText('Epic Stonks Tracker')).toBeInTheDocument();
+      expect(screen.getByText('Stonks')).toBeInTheDocument();
     });
   });
 
