@@ -53,17 +53,19 @@ export function Dashboard() {
 
   if (!hasData) {
     return (
-      <div className="dashboard">
+      <div className="dashboard fade-in">
         <h2>Dashboard</h2>
         <div className="empty-state">
-          <p>No data yet. Start by adding stock prices, grants, and loans in the Config, Grants, and Loans tabs.</p>
+          <div className="empty-state-icon">◈</div>
+          <p className="empty-state-title">Welcome to Stonks</p>
+          <p>Get started by adding stock prices in Config, then create your grants and loans.</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="dashboard">
+    <div className="dashboard fade-in">
       <h2>Dashboard</h2>
 
       <div className="form-row">

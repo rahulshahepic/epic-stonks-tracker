@@ -156,7 +156,7 @@ describe('Dashboard', () => {
     renderWithProviders(<Dashboard />);
 
     await waitFor(() => {
-      expect(screen.getByText(/No data yet/)).toBeInTheDocument();
+      expect(screen.getByText(/Welcome to Stonks/)).toBeInTheDocument();
     });
   });
 
@@ -234,7 +234,7 @@ describe('GrantsPage', () => {
   it('renders empty state', async () => {
     renderWithProviders(<GrantsPage />);
     await waitFor(() => {
-      expect(screen.getByText('No grants added yet.')).toBeInTheDocument();
+      expect(screen.getByText(/No grants added yet/)).toBeInTheDocument();
     });
   });
 
@@ -419,7 +419,7 @@ describe('GrantsPage', () => {
 
     await user.click(screen.getByText('Delete'));
     await waitFor(() => {
-      expect(screen.getByText('No grants added yet.')).toBeInTheDocument();
+      expect(screen.getByText(/No grants added yet/)).toBeInTheDocument();
     });
   });
 });
@@ -443,7 +443,7 @@ describe('LoansPage', () => {
   it('renders empty state', async () => {
     renderWithProviders(<LoansPage />);
     await waitFor(() => {
-      expect(screen.getByText('No loans added yet.')).toBeInTheDocument();
+      expect(screen.getByText(/No loans added yet/)).toBeInTheDocument();
     });
   });
 
@@ -598,7 +598,7 @@ describe('LoansPage', () => {
 
     await user.click(screen.getByText('Delete'));
     await waitFor(() => {
-      expect(screen.getByText('No loans added yet.')).toBeInTheDocument();
+      expect(screen.getByText(/No loans added yet/)).toBeInTheDocument();
     });
   });
 });
@@ -636,7 +636,7 @@ describe('ConfigPage', () => {
   it('renders empty stock prices state', async () => {
     renderWithProviders(<ConfigPage />);
     await waitFor(() => {
-      expect(screen.getByText('No stock prices entered.')).toBeInTheDocument();
+      expect(screen.getByText(/No stock prices entered/)).toBeInTheDocument();
     });
   });
 
@@ -767,7 +767,7 @@ describe('ConfigPage', () => {
     await user.click(screen.getByText('Clear All Data'));
 
     await waitFor(() => {
-      expect(screen.getByText('No stock prices entered.')).toBeInTheDocument();
+      expect(screen.getByText(/No stock prices entered/)).toBeInTheDocument();
     });
 
     confirmSpy.mockRestore();
