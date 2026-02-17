@@ -232,6 +232,133 @@ describe('portfolioReducer', () => {
     expect(result.stockPrices[0].date).toBe('2025-01-01');
   });
 
+  // ── Program Config actions ────────────────────────
+
+  const sampleConfig = {
+    id: 'pc1',
+    name: '2024 Program',
+    programYear: 2024,
+    standardInterestRate: 0.04,
+    standardLoanTermYears: 10,
+    downPaymentPercent: 0.1,
+    shareExchangeAvailable: true,
+    freeShareRatio: 0.5,
+    catchUpShareRatio: 0.5,
+    grantTemplates: {},
+  };
+
+  it('ADD_PROGRAM_CONFIG appends a config', () => {
+    const result = portfolioReducer(state, {
+      type: 'ADD_PROGRAM_CONFIG',
+      config: sampleConfig,
+    });
+    expect(result.programConfigs).toHaveLength(1);
+    expect(result.programConfigs[0]).toEqual(sampleConfig);
+  });
+
+  it('UPDATE_PROGRAM_CONFIG updates an existing config', () => {
+    state = { ...state, programConfigs: [sampleConfig] };
+    const updated = { ...sampleConfig, name: 'Updated Program' };
+    const result = portfolioReducer(state, {
+      type: 'UPDATE_PROGRAM_CONFIG',
+      config: updated,
+    });
+    expect(result.programConfigs).toHaveLength(1);
+    expect(result.programConfigs[0].name).toBe('Updated Program');
+  });
+
+  it('DELETE_PROGRAM_CONFIG removes a config by id', () => {
+    state = { ...state, programConfigs: [sampleConfig] };
+    const result = portfolioReducer(state, {
+      type: 'DELETE_PROGRAM_CONFIG',
+      configId: 'pc1',
+    });
+    expect(result.programConfigs).toHaveLength(0);
+  });
+
+  // ── Share Exchange actions ──────────────────────
+
+  const sampleExchange = {
+    id: 'ex1',
+    date: '2024-06-01',
+    sourceGrantId: 'g1',
+    targetGrantId: 'g2',
+    sharesExchanged: 10,
+    pricePerShareAtExchange: 15,
+    valueAtExchange: 150,
+  };
+
+  it('ADD_SHARE_EXCHANGE appends an exchange', () => {
+    const result = portfolioReducer(state, {
+      type: 'ADD_SHARE_EXCHANGE',
+      exchange: sampleExchange,
+    });
+    expect(result.shareExchanges).toHaveLength(1);
+    expect(result.shareExchanges[0]).toEqual(sampleExchange);
+  });
+
+  it('UPDATE_SHARE_EXCHANGE updates an existing exchange', () => {
+    state = { ...state, shareExchanges: [sampleExchange] };
+    const updated = { ...sampleExchange, sharesExchanged: 20 };
+    const result = portfolioReducer(state, {
+      type: 'UPDATE_SHARE_EXCHANGE',
+      exchange: updated,
+    });
+    expect(result.shareExchanges).toHaveLength(1);
+    expect(result.shareExchanges[0].sharesExchanged).toBe(20);
+  });
+
+  it('DELETE_SHARE_EXCHANGE removes an exchange by id', () => {
+    state = { ...state, shareExchanges: [sampleExchange] };
+    const result = portfolioReducer(state, {
+      type: 'DELETE_SHARE_EXCHANGE',
+      exchangeId: 'ex1',
+    });
+    expect(result.shareExchanges).toHaveLength(0);
+  });
+
+  // ── Stock Sale actions ──────────────────────────
+
+  const sampleSale = {
+    id: 's1',
+    date: '2025-01-01',
+    sourceGrantId: 'g1',
+    sharesSold: 20,
+    pricePerShare: 25,
+    totalProceeds: 500,
+    costBasis: 10,
+    reason: 'voluntary' as const,
+  };
+
+  it('ADD_STOCK_SALE appends a sale', () => {
+    const result = portfolioReducer(state, {
+      type: 'ADD_STOCK_SALE',
+      sale: sampleSale,
+    });
+    expect(result.stockSales).toHaveLength(1);
+    expect(result.stockSales[0]).toEqual(sampleSale);
+  });
+
+  it('UPDATE_STOCK_SALE updates an existing sale', () => {
+    state = { ...state, stockSales: [sampleSale] };
+    const updated = { ...sampleSale, sharesSold: 30 };
+    const result = portfolioReducer(state, {
+      type: 'UPDATE_STOCK_SALE',
+      sale: updated,
+    });
+    expect(result.stockSales).toHaveLength(1);
+    expect(result.stockSales[0].sharesSold).toBe(30);
+  });
+
+  it('DELETE_STOCK_SALE removes a sale by id', () => {
+    state = { ...state, stockSales: [sampleSale] };
+    const result = portfolioReducer(state, {
+      type: 'DELETE_STOCK_SALE',
+      saleId: 's1',
+    });
+    expect(result.stockSales).toHaveLength(0);
+  });
+
   it('CLEAR_ALL resets to empty portfolio', () => {
     state = {
       ...createEmptyPortfolio(),
