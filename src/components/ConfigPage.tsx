@@ -103,7 +103,9 @@ function StockPriceManager() {
       </form>
 
       {portfolio.stockPrices.length === 0 ? (
-        <p className="empty-state">No stock prices entered.</p>
+        <div className="empty-state">
+          <p>No stock prices entered. Add your first price above.</p>
+        </div>
       ) : (
         <table>
           <thead>

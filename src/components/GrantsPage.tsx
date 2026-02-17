@@ -326,7 +326,10 @@ export function GrantsPage() {
 
       {/* Grants List */}
       {portfolio.grants.length === 0 ? (
-        <p className="empty-state">No grants added yet.</p>
+        <div className="empty-state">
+          <div className="empty-state-icon">◆</div>
+          <p>No grants added yet. Tap "Add Grant" to get started.</p>
+        </div>
       ) : (
         <div className="card-list">
           {portfolio.grants.map((grant) => (

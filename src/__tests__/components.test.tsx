@@ -14,6 +14,8 @@ import { Dashboard } from '../components/Dashboard';
 import { GrantsPage } from '../components/GrantsPage';
 import { LoansPage } from '../components/LoansPage';
 import { ConfigPage } from '../components/ConfigPage';
+import { VestingAlerts } from '../components/VestingAlerts';
+import { ThemeProvider } from '../context/ThemeContext';
 import App from '../App';
 
 // ── Mock Storage ───────────────────────────────────────────────
@@ -48,9 +50,11 @@ function renderWithProviders(
   const route = options?.route ?? '/';
 
   return render(
+    <ThemeProvider>
     <PortfolioProvider storage={storage}>
       <MemoryRouter initialEntries={[route]}>{ui}</MemoryRouter>
     </PortfolioProvider>
+    </ThemeProvider>
   );
 }
 
@@ -153,7 +157,7 @@ describe('Dashboard', () => {
     renderWithProviders(<Dashboard />);
 
     await waitFor(() => {
-      expect(screen.getByText(/No data yet/)).toBeInTheDocument();
+      expect(screen.getByText(/Welcome to Stonks/)).toBeInTheDocument();
     });
   });
 
@@ -231,7 +235,7 @@ describe('GrantsPage', () => {
   it('renders empty state', async () => {
     renderWithProviders(<GrantsPage />);
     await waitFor(() => {
-      expect(screen.getByText('No grants added yet.')).toBeInTheDocument();
+      expect(screen.getByText(/No grants added yet/)).toBeInTheDocument();
     });
   });
 
@@ -416,7 +420,7 @@ describe('GrantsPage', () => {
 
     await user.click(screen.getByText('Delete'));
     await waitFor(() => {
-      expect(screen.getByText('No grants added yet.')).toBeInTheDocument();
+      expect(screen.getByText(/No grants added yet/)).toBeInTheDocument();
     });
   });
 });
@@ -440,7 +444,7 @@ describe('LoansPage', () => {
   it('renders empty state', async () => {
     renderWithProviders(<LoansPage />);
     await waitFor(() => {
-      expect(screen.getByText('No loans added yet.')).toBeInTheDocument();
+      expect(screen.getByText(/No loans added yet/)).toBeInTheDocument();
     });
   });
 
@@ -595,7 +599,7 @@ describe('LoansPage', () => {
 
     await user.click(screen.getByText('Delete'));
     await waitFor(() => {
-      expect(screen.getByText('No loans added yet.')).toBeInTheDocument();
+      expect(screen.getByText(/No loans added yet/)).toBeInTheDocument();
     });
   });
 });
@@ -633,7 +637,7 @@ describe('ConfigPage', () => {
   it('renders empty stock prices state', async () => {
     renderWithProviders(<ConfigPage />);
     await waitFor(() => {
-      expect(screen.getByText('No stock prices entered.')).toBeInTheDocument();
+      expect(screen.getByText(/No stock prices entered/)).toBeInTheDocument();
     });
   });
 
@@ -764,7 +768,7 @@ describe('ConfigPage', () => {
     await user.click(screen.getByText('Clear All Data'));
 
     await waitFor(() => {
-      expect(screen.getByText('No stock prices entered.')).toBeInTheDocument();
+      expect(screen.getByText(/No stock prices entered/)).toBeInTheDocument();
     });
 
     confirmSpy.mockRestore();
@@ -903,6 +907,137 @@ describe('ConfigPage', () => {
     fireEvent.change(fileInput, { target: { files: [] } });
     // No error message should appear
     expect(screen.queryByText(/Invalid JSON/)).not.toBeInTheDocument();
+  });
+});
+
+// ── VestingAlerts tests ────────────────────────────────────────
+
+describe('VestingAlerts', () => {
+  it('returns null when no grants', async () => {
+    const { container } = renderWithProviders(
+      <VestingAlerts portfolio={createEmptyPortfolio()} asOfDate="2025-01-15" />
+    );
+    await waitFor(() => {
+      expect(container.querySelector('.vesting-alerts')).toBeNull();
+    });
+  });
+
+  it('shows recently vested milestones', async () => {
+    const portfolio: Portfolio = {
+      grants: [
+        {
+          id: 'g1',
+          type: 'purchase',
+          grantDate: '2024-01-01',
+          totalShares: 100,
+          pricePerShareAtGrant: 10,
+          vestingSchedule: [
+            {
+              id: 't1',
+              vestDate: '2025-01-10',
+              numberOfShares: 50,
+              taxTreatment: 'income',
+            },
+          ],
+        } as StockGrant,
+      ],
+      loans: [],
+      stockPrices: [{ date: '2025-01-01', pricePerShare: 20 }],
+    };
+
+    renderWithProviders(
+      <VestingAlerts portfolio={portfolio} asOfDate="2025-01-15" />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Vesting Milestones')).toBeInTheDocument();
+      expect(screen.getByText('Vested')).toBeInTheDocument();
+      expect(screen.getByText('50 shares')).toBeInTheDocument();
+    });
+  });
+
+  it('shows upcoming milestones', async () => {
+    const portfolio: Portfolio = {
+      grants: [
+        {
+          id: 'g1',
+          type: 'purchase',
+          grantDate: '2024-01-01',
+          totalShares: 100,
+          pricePerShareAtGrant: 10,
+          vestingSchedule: [
+            {
+              id: 't1',
+              vestDate: '2025-02-15',
+              numberOfShares: 50,
+              taxTreatment: 'income',
+            },
+          ],
+        } as StockGrant,
+      ],
+      loans: [],
+      stockPrices: [{ date: '2025-01-01', pricePerShare: 20 }],
+    };
+
+    renderWithProviders(
+      <VestingAlerts portfolio={portfolio} asOfDate="2025-01-15" />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Vesting Milestones')).toBeInTheDocument();
+      expect(screen.getByText('31d')).toBeInTheDocument();
+      expect(screen.getByText('50 shares')).toBeInTheDocument();
+    });
+  });
+
+  it('returns null when no milestones in range', async () => {
+    const portfolio: Portfolio = {
+      grants: [
+        {
+          id: 'g1',
+          type: 'purchase',
+          grantDate: '2024-01-01',
+          totalShares: 100,
+          pricePerShareAtGrant: 10,
+          vestingSchedule: [
+            {
+              id: 't1',
+              vestDate: '2026-06-01',
+              numberOfShares: 100,
+              taxTreatment: 'income',
+            },
+          ],
+        } as StockGrant,
+      ],
+      loans: [],
+      stockPrices: [],
+    };
+
+    const { container } = renderWithProviders(
+      <VestingAlerts portfolio={portfolio} asOfDate="2025-01-15" />
+    );
+
+    await waitFor(() => {
+      expect(container.querySelector('.vesting-alerts')).toBeNull();
+    });
+  });
+});
+
+// ── Theme toggle tests ────────────────────────────────────────
+
+describe('Theme toggle', () => {
+  it('renders theme toggle button in layout', async () => {
+    renderWithProviders(<Layout />);
+    expect(screen.getByLabelText(/Switch to light mode/)).toBeInTheDocument();
+  });
+
+  it('toggles theme on click', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<Layout />);
+
+    const btn = screen.getByLabelText(/Switch to light mode/);
+    await user.click(btn);
+    expect(screen.getByLabelText(/Switch to dark mode/)).toBeInTheDocument();
   });
 });
 

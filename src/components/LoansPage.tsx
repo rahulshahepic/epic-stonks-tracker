@@ -274,7 +274,10 @@ export function LoansPage() {
 
       {/* Loans List */}
       {portfolio.loans.length === 0 ? (
-        <p className="empty-state">No loans added yet.</p>
+        <div className="empty-state">
+          <div className="empty-state-icon">⬡</div>
+          <p>No loans added yet. Tap "Add Loan" to get started.</p>
+        </div>
       ) : (
         <div className="card-list">
           {portfolio.loans.map((loan) => (

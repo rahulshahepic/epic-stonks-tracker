@@ -9,6 +9,8 @@ import {
 import { today, getYear } from '../utils/date';
 import { GRANT_TYPE_LABELS, LOAN_TYPE_LABELS } from '../models';
 import type { GrantType, LoanType } from '../models';
+import { PortfolioCharts } from './PortfolioCharts';
+import { VestingAlerts } from './VestingAlerts';
 
 function formatCurrency(value: number): string {
   return new Intl.NumberFormat('en-US', {
@@ -51,17 +53,19 @@ export function Dashboard() {
 
   if (!hasData) {
     return (
-      <div className="dashboard">
+      <div className="dashboard fade-in">
         <h2>Dashboard</h2>
         <div className="empty-state">
-          <p>No data yet. Start by adding stock prices, grants, and loans in the Config, Grants, and Loans tabs.</p>
+          <div className="empty-state-icon">◈</div>
+          <p className="empty-state-title">Welcome to Stonks</p>
+          <p>Get started by adding stock prices in Config, then create your grants and loans.</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="dashboard">
+    <div className="dashboard fade-in">
       <h2>Dashboard</h2>
 
       <div className="form-row">
@@ -73,6 +77,10 @@ export function Dashboard() {
           onChange={(e) => setAsOfDate(e.target.value)}
         />
       </div>
+
+      <VestingAlerts portfolio={portfolio} asOfDate={asOfDate} />
+
+      <PortfolioCharts portfolio={portfolio} />
 
       {/* Net Value Summary */}
       <section className="card">
