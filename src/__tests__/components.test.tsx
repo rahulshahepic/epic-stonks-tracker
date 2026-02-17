@@ -14,6 +14,7 @@ import { Dashboard } from '../components/Dashboard';
 import { GrantsPage } from '../components/GrantsPage';
 import { LoansPage } from '../components/LoansPage';
 import { ConfigPage } from '../components/ConfigPage';
+import { ThemeProvider } from '../context/ThemeContext';
 import App from '../App';
 
 // ── Mock Storage ───────────────────────────────────────────────
@@ -48,9 +49,11 @@ function renderWithProviders(
   const route = options?.route ?? '/';
 
   return render(
+    <ThemeProvider>
     <PortfolioProvider storage={storage}>
       <MemoryRouter initialEntries={[route]}>{ui}</MemoryRouter>
     </PortfolioProvider>
+    </ThemeProvider>
   );
 }
 

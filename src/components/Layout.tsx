@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom';
+import { useTheme } from '../context/useTheme';
 
 const navItems = [
   { to: '/', label: 'Dashboard', icon: '◈' },
@@ -8,10 +9,20 @@ const navItems = [
 ];
 
 export function Layout() {
+  const { theme, toggleTheme } = useTheme();
+
   return (
     <div className="app-layout">
       <header className="app-header">
         <h1>Stonks</h1>
+        <button
+          className="theme-toggle"
+          onClick={toggleTheme}
+          aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+          title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+        >
+          {theme === 'dark' ? '☀' : '☾'}
+        </button>
       </header>
       <main className="app-main">
         <Outlet />

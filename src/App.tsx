@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { PortfolioProvider } from './context/PortfolioContext';
+import { ThemeProvider } from './context/ThemeContext';
 import { LocalStorageProvider } from './storage';
 import { Layout } from './components/Layout';
 import { Dashboard } from './components/Dashboard';
@@ -11,6 +12,7 @@ const storage = new LocalStorageProvider();
 
 export default function App() {
   return (
+    <ThemeProvider>
     <PortfolioProvider storage={storage}>
       <BrowserRouter basename={import.meta.env.BASE_URL}>
         <Routes>
@@ -23,5 +25,6 @@ export default function App() {
         </Routes>
       </BrowserRouter>
     </PortfolioProvider>
+    </ThemeProvider>
   );
 }
