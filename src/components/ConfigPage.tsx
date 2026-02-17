@@ -7,6 +7,7 @@ import {
   exportPortfolioToJson,
   mergePortfolios,
 } from '../services/import-export';
+import { AiImportHelper } from './AiImportHelper';
 import { APP_VERSION } from '../version';
 
 export function ConfigPage() {
@@ -20,6 +21,8 @@ export function ConfigPage() {
       <StockPriceManager />
       <hr />
       <ImportExport />
+      <hr />
+      <AiImportHelper />
       <p className="app-version-footer">Build {APP_VERSION}</p>
     </div>
   );
