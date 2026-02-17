@@ -71,6 +71,9 @@ describe('LocalStorageProvider', () => {
         stockPrices: [
           { date: '2024-01-01', pricePerShare: 10 },
         ] as StockPrice[],
+        programConfigs: [],
+        shareExchanges: [],
+        stockSales: [],
       };
 
       await provider.save(portfolio);
@@ -170,8 +173,7 @@ describe('LocalStorageProvider', () => {
   describe('clear', () => {
     it('removes data from localStorage', async () => {
       await provider.save({
-        grants: [],
-        loans: [],
+        ...createEmptyPortfolio(),
         stockPrices: [{ date: '2024-01-01', pricePerShare: 10 }],
       });
       expect(localStorage.getItem(TEST_KEY)).not.toBeNull();
@@ -181,8 +183,7 @@ describe('LocalStorageProvider', () => {
 
     it('load returns empty portfolio after clear', async () => {
       await provider.save({
-        grants: [],
-        loans: [],
+        ...createEmptyPortfolio(),
         stockPrices: [{ date: '2024-01-01', pricePerShare: 10 }],
       });
       await provider.clear();
@@ -195,8 +196,7 @@ describe('LocalStorageProvider', () => {
     it('uses default key when none provided', async () => {
       const defaultProvider = new LocalStorageProvider();
       const portfolio: Portfolio = {
-        grants: [],
-        loans: [],
+        ...createEmptyPortfolio(),
         stockPrices: [{ date: '2025-01-01', pricePerShare: 100 }],
       };
       await defaultProvider.save(portfolio);

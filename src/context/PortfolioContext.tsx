@@ -7,7 +7,15 @@ import {
   type Dispatch,
   type ReactNode,
 } from 'react';
-import type { Portfolio, StockGrant, Loan, StockPrice } from '../models';
+import type {
+  Portfolio,
+  StockGrant,
+  Loan,
+  StockPrice,
+  ProgramConfig,
+  ShareExchange,
+  StockSale,
+} from '../models';
 import { createEmptyPortfolio } from '../models';
 import type { StorageProvider } from '../storage';
 
@@ -24,6 +32,15 @@ export type PortfolioAction =
   | { type: 'ADD_STOCK_PRICE'; price: StockPrice }
   | { type: 'UPDATE_STOCK_PRICE'; oldDate: string; price: StockPrice }
   | { type: 'DELETE_STOCK_PRICE'; date: string }
+  | { type: 'ADD_PROGRAM_CONFIG'; config: ProgramConfig }
+  | { type: 'UPDATE_PROGRAM_CONFIG'; config: ProgramConfig }
+  | { type: 'DELETE_PROGRAM_CONFIG'; configId: string }
+  | { type: 'ADD_SHARE_EXCHANGE'; exchange: ShareExchange }
+  | { type: 'UPDATE_SHARE_EXCHANGE'; exchange: ShareExchange }
+  | { type: 'DELETE_SHARE_EXCHANGE'; exchangeId: string }
+  | { type: 'ADD_STOCK_SALE'; sale: StockSale }
+  | { type: 'UPDATE_STOCK_SALE'; sale: StockSale }
+  | { type: 'DELETE_STOCK_SALE'; saleId: string }
   | { type: 'CLEAR_ALL' };
 
 // ── Reducer ─────────────────────────────────────────────────────
@@ -90,6 +107,67 @@ export function portfolioReducer(
       return {
         ...state,
         stockPrices: state.stockPrices.filter((p) => p.date !== action.date),
+      };
+
+    case 'ADD_PROGRAM_CONFIG':
+      return {
+        ...state,
+        programConfigs: [...state.programConfigs, action.config],
+      };
+
+    case 'UPDATE_PROGRAM_CONFIG':
+      return {
+        ...state,
+        programConfigs: state.programConfigs.map((c) =>
+          c.id === action.config.id ? action.config : c
+        ),
+      };
+
+    case 'DELETE_PROGRAM_CONFIG':
+      return {
+        ...state,
+        programConfigs: state.programConfigs.filter(
+          (c) => c.id !== action.configId
+        ),
+      };
+
+    case 'ADD_SHARE_EXCHANGE':
+      return {
+        ...state,
+        shareExchanges: [...state.shareExchanges, action.exchange],
+      };
+
+    case 'UPDATE_SHARE_EXCHANGE':
+      return {
+        ...state,
+        shareExchanges: state.shareExchanges.map((e) =>
+          e.id === action.exchange.id ? action.exchange : e
+        ),
+      };
+
+    case 'DELETE_SHARE_EXCHANGE':
+      return {
+        ...state,
+        shareExchanges: state.shareExchanges.filter(
+          (e) => e.id !== action.exchangeId
+        ),
+      };
+
+    case 'ADD_STOCK_SALE':
+      return { ...state, stockSales: [...state.stockSales, action.sale] };
+
+    case 'UPDATE_STOCK_SALE':
+      return {
+        ...state,
+        stockSales: state.stockSales.map((s) =>
+          s.id === action.sale.id ? action.sale : s
+        ),
+      };
+
+    case 'DELETE_STOCK_SALE':
+      return {
+        ...state,
+        stockSales: state.stockSales.filter((s) => s.id !== action.saleId),
       };
 
     case 'CLEAR_ALL':

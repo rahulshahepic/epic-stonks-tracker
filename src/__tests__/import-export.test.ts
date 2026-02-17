@@ -12,6 +12,12 @@ import type { StockPrice } from '../models/stock-price';
 
 // ── Helpers ────────────────────────────────────────────────────
 
+const EMPTY_COLLECTIONS = {
+  programConfigs: [] as Portfolio['programConfigs'],
+  shareExchanges: [] as Portfolio['shareExchanges'],
+  stockSales: [] as Portfolio['stockSales'],
+};
+
 function makeValidPortfolio(): Portfolio {
   return {
     grants: [
@@ -46,6 +52,7 @@ function makeValidPortfolio(): Portfolio {
       { date: '2024-01-01', pricePerShare: 10 } as StockPrice,
       { date: '2025-01-01', pricePerShare: 15 } as StockPrice,
     ],
+    ...EMPTY_COLLECTIONS,
   };
 }
 
@@ -240,7 +247,7 @@ describe('exportPortfolioToJson', () => {
   it('exports empty portfolio', () => {
     const json = exportPortfolioToJson(createEmptyPortfolio());
     const parsed = JSON.parse(json);
-    expect(parsed).toEqual({ grants: [], loans: [], stockPrices: [] });
+    expect(parsed).toEqual(createEmptyPortfolio());
   });
 
   it('round-trips with importPortfolioFromJson', () => {
@@ -280,6 +287,7 @@ describe('mergePortfolios', () => {
       ],
       loans: [],
       stockPrices: [],
+      ...EMPTY_COLLECTIONS,
     };
     const incoming: Portfolio = {
       grants: [
@@ -294,6 +302,7 @@ describe('mergePortfolios', () => {
       ],
       loans: [],
       stockPrices: [],
+      ...EMPTY_COLLECTIONS,
     };
 
     const result = mergePortfolios(existing, incoming);
@@ -317,6 +326,7 @@ describe('mergePortfolios', () => {
       ],
       loans: [],
       stockPrices: [],
+      ...EMPTY_COLLECTIONS,
     };
     const incoming: Portfolio = {
       grants: [
@@ -332,6 +342,7 @@ describe('mergePortfolios', () => {
       ],
       loans: [],
       stockPrices: [],
+      ...EMPTY_COLLECTIONS,
     };
 
     const result = mergePortfolios(existing, incoming);
@@ -347,6 +358,7 @@ describe('mergePortfolios', () => {
         { id: 'l1', type: 'purchase', principalAmount: 1000, annualInterestRate: 0.04, originationDate: '2024-01-01', maturityDate: '2034-01-01', status: 'active' } as Loan,
       ],
       stockPrices: [],
+      ...EMPTY_COLLECTIONS,
     };
     const incoming: Portfolio = {
       grants: [],
@@ -354,6 +366,7 @@ describe('mergePortfolios', () => {
         { id: 'l2', type: 'tax', principalAmount: 500, annualInterestRate: 0.03, originationDate: '2024-06-01', maturityDate: '2025-06-01', status: 'active' } as Loan,
       ],
       stockPrices: [],
+      ...EMPTY_COLLECTIONS,
     };
 
     const result = mergePortfolios(existing, incoming);
@@ -367,6 +380,7 @@ describe('mergePortfolios', () => {
         { id: 'l1', type: 'purchase', principalAmount: 1000, annualInterestRate: 0.04, originationDate: '2024-01-01', maturityDate: '2034-01-01', status: 'active' } as Loan,
       ],
       stockPrices: [],
+      ...EMPTY_COLLECTIONS,
     };
     const incoming: Portfolio = {
       grants: [],
@@ -374,6 +388,7 @@ describe('mergePortfolios', () => {
         { id: 'l1', type: 'purchase', principalAmount: 1000, annualInterestRate: 0.04, originationDate: '2024-01-01', maturityDate: '2034-01-01', status: 'paid_off' } as Loan,
       ],
       stockPrices: [],
+      ...EMPTY_COLLECTIONS,
     };
 
     const result = mergePortfolios(existing, incoming);
@@ -389,6 +404,7 @@ describe('mergePortfolios', () => {
         { date: '2024-01-01', pricePerShare: 10 },
         { date: '2024-06-01', pricePerShare: 15 },
       ],
+      ...EMPTY_COLLECTIONS,
     };
     const incoming: Portfolio = {
       grants: [],
@@ -397,6 +413,7 @@ describe('mergePortfolios', () => {
         { date: '2024-06-01', pricePerShare: 20 }, // overwrites
         { date: '2025-01-01', pricePerShare: 25 }, // new
       ],
+      ...EMPTY_COLLECTIONS,
     };
 
     const result = mergePortfolios(existing, incoming);
@@ -410,11 +427,13 @@ describe('mergePortfolios', () => {
       grants: [],
       loans: [],
       stockPrices: [{ date: '2025-01-01', pricePerShare: 30 }],
+      ...EMPTY_COLLECTIONS,
     };
     const incoming: Portfolio = {
       grants: [],
       loans: [],
       stockPrices: [{ date: '2024-01-01', pricePerShare: 10 }],
+      ...EMPTY_COLLECTIONS,
     };
 
     const result = mergePortfolios(existing, incoming);

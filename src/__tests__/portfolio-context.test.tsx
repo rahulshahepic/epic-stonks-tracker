@@ -73,6 +73,7 @@ describe('portfolioReducer', () => {
 
   it('SET_PORTFOLIO replaces entire state', () => {
     const newPortfolio: Portfolio = {
+      ...createEmptyPortfolio(),
       grants: [sampleGrant],
       loans: [sampleLoan],
       stockPrices: [samplePrice],
@@ -233,6 +234,7 @@ describe('portfolioReducer', () => {
 
   it('CLEAR_ALL resets to empty portfolio', () => {
     state = {
+      ...createEmptyPortfolio(),
       grants: [sampleGrant],
       loans: [sampleLoan],
       stockPrices: [samplePrice],
@@ -278,6 +280,7 @@ describe('PortfolioProvider and usePortfolio', () => {
 
   it('loads initial data from storage', async () => {
     const initialData: Portfolio = {
+      ...createEmptyPortfolio(),
       grants: [
         {
           id: 'g1',

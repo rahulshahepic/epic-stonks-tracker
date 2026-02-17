@@ -2,9 +2,12 @@ import { NavLink, Outlet } from 'react-router-dom';
 import { useTheme } from '../context/useTheme';
 
 const navItems = [
-  { to: '/', label: 'Dashboard', icon: '◈' },
+  { to: '/', label: 'Home', icon: '◈' },
   { to: '/grants', label: 'Grants', icon: '◆' },
   { to: '/loans', label: 'Loans', icon: '⬡' },
+  { to: '/exchanges', label: 'Exch', icon: '⇄' },
+  { to: '/sales', label: 'Sales', icon: '$' },
+  { to: '/programs', label: 'Prog', icon: '▤' },
   { to: '/config', label: 'Config', icon: '⚙' },
 ];
 

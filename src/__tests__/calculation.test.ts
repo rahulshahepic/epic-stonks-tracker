@@ -57,6 +57,9 @@ function makePortfolio(overrides: Partial<Portfolio> = {}): Portfolio {
     grants: [],
     loans: [],
     stockPrices: [],
+    programConfigs: [],
+    shareExchanges: [],
+    stockSales: [],
     ...overrides,
   };
 }

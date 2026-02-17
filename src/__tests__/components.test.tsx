@@ -62,6 +62,7 @@ function renderWithProviders(
 
 function samplePortfolio(): Portfolio {
   return {
+    ...createEmptyPortfolio(),
     grants: [
       {
         id: 'g1',
@@ -119,7 +120,7 @@ describe('Layout', () => {
     renderWithProviders(
       <Layout />
     );
-    expect(screen.getByText('Dashboard')).toBeInTheDocument();
+    expect(screen.getByText('Home')).toBeInTheDocument();
     expect(screen.getByText('Grants')).toBeInTheDocument();
     expect(screen.getByText('Loans')).toBeInTheDocument();
     expect(screen.getByText('Config')).toBeInTheDocument();
@@ -129,9 +130,9 @@ describe('Layout', () => {
     renderWithProviders(
       <Layout />
     );
-    const dashLabel = screen.getByText('Dashboard');
+    const homeLabel = screen.getByText('Home');
     // Text is inside a <span> inside an <a> (NavLink)
-    expect(dashLabel.closest('a')).toBeTruthy();
+    expect(homeLabel.closest('a')).toBeTruthy();
   });
 });
 
@@ -171,7 +172,7 @@ describe('Dashboard', () => {
 
     // Should display stock price, vested shares, etc.
     expect(screen.getByText('Stock Price')).toBeInTheDocument();
-    expect(screen.getByText('Vested Shares')).toBeInTheDocument();
+    expect(screen.getByText('Held Shares')).toBeInTheDocument();
     expect(screen.getByText('Unvested Shares')).toBeInTheDocument();
     expect(screen.getByText('Gross Share Value')).toBeInTheDocument();
   });
@@ -999,6 +1000,7 @@ describe('VestingAlerts', () => {
 
   it('shows recently vested milestones', async () => {
     const portfolio: Portfolio = {
+      ...createEmptyPortfolio(),
       grants: [
         {
           id: 'g1',
@@ -1033,6 +1035,7 @@ describe('VestingAlerts', () => {
 
   it('shows upcoming milestones', async () => {
     const portfolio: Portfolio = {
+      ...createEmptyPortfolio(),
       grants: [
         {
           id: 'g1',
@@ -1067,6 +1070,7 @@ describe('VestingAlerts', () => {
 
   it('returns null when no milestones in range', async () => {
     const portfolio: Portfolio = {
+      ...createEmptyPortfolio(),
       grants: [
         {
           id: 'g1',
