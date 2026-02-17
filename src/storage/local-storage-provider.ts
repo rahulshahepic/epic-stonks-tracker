@@ -43,6 +43,15 @@ export class LocalStorageProvider implements StorageProvider {
       stockPrices: Array.isArray(data.stockPrices)
         ? data.stockPrices
         : empty.stockPrices,
+      programConfigs: Array.isArray(data.programConfigs)
+        ? data.programConfigs
+        : empty.programConfigs,
+      shareExchanges: Array.isArray(data.shareExchanges)
+        ? data.shareExchanges
+        : empty.shareExchanges,
+      stockSales: Array.isArray(data.stockSales)
+        ? data.stockSales
+        : empty.stockSales,
     };
   }
 }

@@ -1,5 +1,12 @@
 import type { Portfolio } from '../models';
-import { validateGrant, validateLoan, validateStockPrice } from '../models';
+import {
+  validateGrant,
+  validateLoan,
+  validateStockPrice,
+  validateProgramConfig,
+  validateShareExchange,
+  validateStockSale,
+} from '../models';
 import { createEmptyPortfolio } from '../models';
 
 export interface ImportResult {
@@ -86,6 +93,51 @@ export function importPortfolioFromJson(json: string): ImportResult {
     warnings.push('stockPrices field is not an array, skipping.');
   }
 
+  // Parse program configs
+  if (Array.isArray(data.programConfigs)) {
+    for (let i = 0; i < data.programConfigs.length; i++) {
+      const config = data.programConfigs[i];
+      const configErrors = validateProgramConfig(config);
+      if (configErrors.length > 0) {
+        warnings.push(`Program config ${i}: ${configErrors.join('; ')}`);
+      } else {
+        portfolio.programConfigs.push(config);
+      }
+    }
+  } else if (data.programConfigs !== undefined) {
+    warnings.push('programConfigs field is not an array, skipping.');
+  }
+
+  // Parse share exchanges
+  if (Array.isArray(data.shareExchanges)) {
+    for (let i = 0; i < data.shareExchanges.length; i++) {
+      const exchange = data.shareExchanges[i];
+      const exchangeErrors = validateShareExchange(exchange);
+      if (exchangeErrors.length > 0) {
+        warnings.push(`Share exchange ${i}: ${exchangeErrors.join('; ')}`);
+      } else {
+        portfolio.shareExchanges.push(exchange);
+      }
+    }
+  } else if (data.shareExchanges !== undefined) {
+    warnings.push('shareExchanges field is not an array, skipping.');
+  }
+
+  // Parse stock sales
+  if (Array.isArray(data.stockSales)) {
+    for (let i = 0; i < data.stockSales.length; i++) {
+      const sale = data.stockSales[i];
+      const saleErrors = validateStockSale(sale);
+      if (saleErrors.length > 0) {
+        warnings.push(`Stock sale ${i}: ${saleErrors.join('; ')}`);
+      } else {
+        portfolio.stockSales.push(sale);
+      }
+    }
+  } else if (data.stockSales !== undefined) {
+    warnings.push('stockSales field is not an array, skipping.');
+  }
+
   return {
     success: errors.length === 0,
     portfolio,
@@ -123,6 +175,18 @@ export function mergePortfolios(
     grants: mergedGrants,
     loans: mergedLoans,
     stockPrices: mergedPrices,
+    programConfigs: mergeById(
+      existing.programConfigs ?? [],
+      incoming.programConfigs ?? []
+    ),
+    shareExchanges: mergeById(
+      existing.shareExchanges ?? [],
+      incoming.shareExchanges ?? []
+    ),
+    stockSales: mergeById(
+      existing.stockSales ?? [],
+      incoming.stockSales ?? []
+    ),
   };
 }
 

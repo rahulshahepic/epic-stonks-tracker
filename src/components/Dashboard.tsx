@@ -11,6 +11,7 @@ import { GRANT_TYPE_LABELS, LOAN_TYPE_LABELS } from '../models';
 import type { GrantType, LoanType } from '../models';
 import { PortfolioCharts } from './PortfolioCharts';
 import { VestingAlerts } from './VestingAlerts';
+import { ProjectionsPanel } from './ProjectionsPanel';
 
 function formatCurrency(value: number): string {
   return new Intl.NumberFormat('en-US', {
@@ -98,8 +99,8 @@ export function Dashboard() {
             </span>
           </div>
           <div className="stat">
-            <span className="stat-label">Vested Shares</span>
-            <span className="stat-value">{report.totalVestedShares.toLocaleString()}</span>
+            <span className="stat-label">Held Shares</span>
+            <span className="stat-value">{report.totalHeldShares.toLocaleString()}</span>
           </div>
           <div className="stat">
             <span className="stat-label">Unvested Shares</span>
@@ -144,17 +145,17 @@ export function Dashboard() {
             <thead>
               <tr>
                 <th>Type</th>
-                <th>Vested</th>
+                <th>Held</th>
                 <th>Unvested</th>
                 <th>Total</th>
-                <th>Value (Vested)</th>
+                <th>Value (Held)</th>
               </tr>
             </thead>
             <tbody>
               {report.byGrant.map((g) => (
                 <tr key={g.grantId}>
                   <td>{GRANT_TYPE_LABELS[g.grantType as GrantType]}</td>
-                  <td>{g.vestedShares.toLocaleString()}</td>
+                  <td>{g.heldShares.toLocaleString()}</td>
                   <td>{g.unvestedShares.toLocaleString()}</td>
                   <td>{g.totalShares.toLocaleString()}</td>
                   <td>{formatCurrency(g.shareValue)}</td>
@@ -306,6 +307,8 @@ export function Dashboard() {
           )}
         </section>
       )}
+
+      <ProjectionsPanel portfolio={portfolio} asOfDate={asOfDate} />
     </div>
   );
 }
