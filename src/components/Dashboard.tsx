@@ -9,6 +9,7 @@ import {
 import { today, getYear } from '../utils/date';
 import { GRANT_TYPE_LABELS, LOAN_TYPE_LABELS } from '../models';
 import type { GrantType, LoanType } from '../models';
+import { PortfolioCharts } from './PortfolioCharts';
 
 function formatCurrency(value: number): string {
   return new Intl.NumberFormat('en-US', {
@@ -73,6 +74,8 @@ export function Dashboard() {
           onChange={(e) => setAsOfDate(e.target.value)}
         />
       </div>
+
+      <PortfolioCharts portfolio={portfolio} />
 
       {/* Net Value Summary */}
       <section className="card">

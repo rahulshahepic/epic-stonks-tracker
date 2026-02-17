@@ -583,6 +583,16 @@ table:not(.tranche-table) td {
   border: 1px solid rgba(248, 113, 113, 0.2);
 }
 
+/* ── Charts ────────────────────────────────────────────────── */
+.chart-container {
+  margin-top: 0.5rem;
+  margin-left: -0.5rem;
+}
+
+.chart-section .card + .card {
+  margin-top: 0.75rem;
+}
+
 /* ── Misc ──────────────────────────────────────────────────── */
 .empty-state {
   color: var(--text-muted);

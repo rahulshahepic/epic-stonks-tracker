@@ -35,6 +35,15 @@ function swVersionPlugin() {
 export default defineConfig({
   plugins: [react(), swVersionPlugin()],
   base: '/epic-stonks-tracker/',
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          recharts: ['recharts'],
+        },
+      },
+    },
+  },
   define: {
     __COMMIT_HASH__: JSON.stringify(commitHash),
   },
