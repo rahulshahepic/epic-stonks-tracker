@@ -583,6 +583,86 @@ table:not(.tranche-table) td {
   border: 1px solid rgba(248, 113, 113, 0.2);
 }
 
+/* ── Vesting Alerts ────────────────────────────────────────── */
+.vesting-alerts {
+  border-left: 3px solid var(--primary);
+}
+
+.alert-group {
+  margin-top: 0.75rem;
+}
+
+.alert-group-label {
+  display: inline-block;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.5rem;
+}
+
+.alert-group-label--recent { color: var(--positive); }
+.alert-group-label--upcoming { color: var(--primary); }
+
+.alert-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.alert-item:last-child {
+  border-bottom: none;
+}
+
+.alert-badge {
+  flex-shrink: 0;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  padding: 0.125rem 0.5rem;
+  border-radius: 999px;
+  text-align: center;
+  min-width: 3rem;
+}
+
+.alert-badge--vested {
+  background: var(--positive-soft);
+  color: var(--positive);
+}
+
+.alert-badge--soon {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+.alert-badge--later {
+  background: var(--bg-accent);
+  color: var(--text-muted);
+}
+
+.alert-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.alert-details strong {
+  display: block;
+  font-size: 0.875rem;
+  color: var(--text-heading);
+}
+
+.alert-meta {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.alert-value {
+  font-weight: 600;
+  font-size: 0.875rem;
+  flex-shrink: 0;
+}
+
 /* ── Charts ────────────────────────────────────────────────── */
 .chart-container {
   margin-top: 0.5rem;
