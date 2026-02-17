@@ -15,168 +15,125 @@
 - [x] GitHub Actions CI: lint, test (90%+ coverage), build
 - [x] GitHub Pages deployment
 
-### 1A: Data Architecture Rework — Program Config vs. User Data
+### 1A: Data Architecture Rework — Program Config vs. User Data ✅
 
-**Problem:** The current model embeds Epic's program structure (interest rates, vesting
-patterns, grant-type bundles) into every individual record. Users re-enter the same
-structural info for each grant. The JSON import also mixes structural and personal data,
-which is confusing.
-
-**Goal:** Separate into two layers so users can set up program rules once, then only
-enter their specific choices.
-
-#### Program Config (structural, same for all employees in a given year)
-
-- [ ] `ProgramConfig` model: a set of rules for a given program year / offering
-  - Standard interest rate for purchase loans (e.g., 4% in 2020, 3.5% in 2022)
-  - Standard loan term (e.g., 10-year maturity)
-  - Vesting schedule template per grant type:
-    - Purchase: e.g., 20% per year over 5 years, tax treatment = "none"
-    - Free: e.g., 100% vest at end of 5-year period, tax treatment = "income"
-    - Catch-up: e.g., vest annually over 5 years, tax treatment = "income"
-    - Bonus: e.g., vest over N years, early tranches = "income", later = "capital_gains"
-  - Free/catch-up share ratio (e.g., X free shares per Y purchased shares)
-  - Down payment percentage required for purchase grants
-  - Whether share exchange is available for down payment
-- [ ] `ProgramConfig` management UI in Config page (or dedicated page)
-- [ ] AI helper prompt updated to support generating ProgramConfig separately
+- [x] `ProgramConfig` model with interest rates, loan terms, vesting templates per grant type
+- [x] `ProgramConfig` CRUD page with vesting template display
+- [x] AI helper prompt for converting raw data to JSON
 - [ ] Pre-built config templates for known Epic program years (user can customize)
-
-#### User-Specific Data (personal choices)
-
-- [ ] Simplified grant entry: user picks a program year, enters share count and date;
-      vesting schedule, interest rate, and related grants auto-generate from ProgramConfig
-- [ ] Override mechanism: user can still manually adjust any auto-generated values
-      (e.g., if their specific grant had non-standard terms)
-- [ ] Simplified loan entry: auto-populate rate and term from ProgramConfig for the
-      corresponding grant's program year
+- [ ] Simplified grant/loan entry auto-populating from ProgramConfig
 - [ ] Import flow split: "Import Program Config" vs. "Import My Data"
 
-### 1B: Share Exchanges
+### 1B: Share Exchanges ✅
 
-**Context:** As part of the down payment on stock purchases, employees could exchange
-already-vested shares for the down payment amount. This is not a sale — no taxable
-event occurs. The exchanged shares leave the portfolio and reduce the loan amount needed.
+- [x] `ShareExchange` model with source/target grants, shares, price, value
+- [x] ShareExchanges CRUD page with grant dropdowns and auto-calculated value
+- [x] Calculation engine: held shares = vested - exchanged - sold
+- [ ] Grant entry integration: optionally record exchange as part of purchase grant flow
+- [ ] Loan principal adjustment based on exchange value
 
-- [ ] `ShareExchange` model:
-  - `id`, `date` (YYYY-MM-DD)
-  - `sourceGrantId` — which grant the vested shares came from
-  - `targetGrantId` — which new purchase grant this is a down payment for
-  - `sharesExchanged` — number of shares given up
-  - `valueAtExchange` — total value of shares at exchange price
-  - `pricePerShareAtExchange` — stock price used for the exchange
-  - `notes`
-- [ ] Portfolio model updated: `portfolio.shareExchanges: ShareExchange[]`
-- [ ] ShareExchanges page: manage exchange events
-- [ ] Calculation engine updates:
-  - Vested share count reduced by exchanged shares (as of exchange date)
-  - Share exchanges explicitly excluded from taxable events
-  - Net value calculation accounts for shares no longer held
-- [ ] Grant entry integration: when creating a purchase grant, optionally record a
-      share exchange as part of the same flow
-- [ ] Loan principal adjustment: if shares are exchanged as down payment, the purchase
-      loan principal should reflect only the remaining amount after the exchange
+### 1C: Stock Sale Events ✅
 
-### 1C: Stock Sale Events
+- [x] `StockSale` model with cost basis, reason codes, related loan
+- [x] StockSales CRUD page with summary stats (total sold, proceeds, realized gains)
+- [x] Calculation engine: capital gains, held share deductions, realized gains
+- [x] Dashboard shows held shares instead of raw vested
 
-**Context:** When loans mature, employees typically must sell enough vested shares to
-cover the loan balance. Sales are also done voluntarily. Each sale is a taxable event.
+### 1D: Future Value Projections ✅
 
-- [ ] `StockSale` model:
-  - `id`, `date` (YYYY-MM-DD)
-  - `sourceGrantId` — which grant the sold shares came from
-  - `sharesSold` — number of shares
-  - `pricePerShare` — sale price
-  - `totalProceeds` — sharesSold * pricePerShare
-  - `costBasis` — price per share at grant/vest (for tax calculation)
-  - `reason`: `'loan_payoff'` | `'tax_payment'` | `'voluntary'`
-  - `relatedLoanId` — if sold to pay off a specific loan
-  - `notes`
-- [ ] Portfolio model updated: `portfolio.stockSales: StockSale[]`
-- [ ] StockSales page: manage sale events (past sales)
-- [ ] Calculation engine updates:
-  - Held share count reduced by sold shares
-  - Capital gains calculation: (salePrice - costBasis) * sharesSold
-  - Net value accounts for shares no longer held but also loans paid off
-  - Dashboard: total realized gains, total shares sold, remaining held shares
-
-### 1D: Future Value Projections & Auto-Planned Loan Payoff
-
-**Context:** Users need to see what their portfolio looks like in the future. When a
-loan matures, the system should automatically plan a sale of enough shares to cover
-the loan balance (principal + accrued interest).
-
-- [ ] User-configurable stock price growth rate assumption (e.g., 8% annual)
-- [ ] Projection engine:
-  - For each future date, project stock price using growth rate
-  - Apply future vesting events (shares that will vest)
-  - For each loan maturity, auto-plan a sale:
-    - Calculate total owed (principal + all accrued interest)
-    - Determine how many shares need to be sold at projected price
-    - Deduct those shares from holdings
-    - Calculate tax impact of the forced sale
-  - Show year-by-year projection: vested shares, loans outstanding, net value
-- [ ] "What-if" scenarios:
-  - What if stock price grows at X% vs. Y%?
-  - What if I refinance loan Z at a lower rate?
-  - What if I sell N shares voluntarily at date D?
-- [ ] Projection visualization: chart showing net value trajectory over time
-      with key events marked (vestings, loan maturities, planned sales)
+- [x] Projection engine with configurable growth rate and year range
+- [x] Auto-planned share sales at loan maturity
+- [x] ProjectionsPanel on Dashboard with area chart and year-by-year table
+- [ ] "What-if" scenarios (refinance, voluntary sale, multiple growth rates side-by-side)
 
 ### 1E: Remaining Polish
 
 - [ ] Placeholder PWA icons (192x192, 512x512)
-- [ ] UI polish: responsive design, dark mode
+- [x] UI: dark mode, 7-tab nav, dropdowns for grant/loan references
 - [ ] Better form validation UX (inline errors, field highlighting)
-- [ ] Dropdowns for related grant/loan IDs instead of raw UUID text inputs
 
-## Phase 2: GCP Cloud Run Hosting (localStorage still)
-
-**Status: Not Started**
-
-Move the frontend to run on GCP Cloud Run while still using localStorage for data persistence.
-
-- [ ] Dockerize the app (multi-stage build: build with Node, serve with nginx)
-- [ ] Terraform / Pulumi IaC for GCP Cloud Run (designed to be cloud-agnostic)
-- [ ] Cloud Build or GitHub Actions pipeline to deploy to Cloud Run
-- [ ] Custom domain setup (optional)
-- [ ] Health check endpoint
-
-### Architecture Notes
-- The app remains a client-side SPA; Cloud Run just serves the static assets
-- No backend API yet — localStorage is still the persistence layer
-- IaC should use modules/abstractions that can be swapped for AWS/Azure equivalents
-
-## Phase 3: GCP Backend + Google IdP Authentication
+## Phase 2: Google Drive Sync (User-Owned Storage)
 
 **Status: Not Started**
 
-Add a backend API, migrate storage to GCP, and implement Google identity management.
+**Key insight:** Users should not trust a third party with their financial data.
+Instead of building a backend database, store user data in the user's own Google Drive
+using the [App Data folder](https://developers.google.com/drive/api/guides/appdata)
+(`appDataFolder` scope). This hidden folder is readable/writable only by this app —
+the user never sees it in their Drive, but it syncs across all their devices automatically.
 
-### Authentication
-- [ ] Google Identity Platform (Firebase Auth) integration
-- [ ] Sign-in with Google OAuth 2.0
-- [ ] Protected routes in the frontend
-- [ ] JWT validation in the backend API
+**Benefits:**
+- Zero data custody liability — the developer never sees or stores financial data
+- No backend database to provision, secure, or pay for
+- Cross-device sync via Google Drive for free
+- Users can revoke access at any time (Google Account → Third-party apps)
+- The app stays a pure static SPA (GitHub Pages / any CDN)
+- No GDPR/SOC2/compliance burden for financial data
 
-### Backend API
-- [ ] Cloud Run backend service (Node.js / Express or similar)
-- [ ] REST API for CRUD operations on portfolio data
-- [ ] API authentication middleware (validate Google ID tokens)
-- [ ] Rate limiting and input validation
+### 2A: Google Identity Services (GIS) Authentication
 
-### Storage Migration
-- [ ] Storage provider implementation for the chosen backend:
-  - Option A: **Firestore** (NoSQL, native GCP) — swap to DynamoDB/CosmosDB later
-  - Option B: **Cloud SQL (PostgreSQL)** — most portable across clouds
-- [ ] Data migration tool: import from localStorage → cloud storage
-- [ ] Offline-first strategy: sync localStorage with cloud when online
+- [ ] Add `@react-oauth/google` or raw GIS client library
+- [ ] GCP project setup: OAuth 2.0 client ID (web application type)
+- [ ] Scopes: `https://www.googleapis.com/auth/drive.appdata` (only app data folder)
+- [ ] Sign-in UI: "Sign in with Google" button on Config page
+- [ ] Token management:
+  - Store access token in memory (not localStorage — tokens are short-lived)
+  - Refresh token handling via GIS implicit/popup flow
+  - Graceful degradation: app works fully offline with localStorage when not signed in
+- [ ] Auth state context: `GoogleAuthProvider` wrapping the app
+- [ ] Sign-out flow: clear tokens, keep localStorage data intact
 
-### Cloud-Agnostic Design
-- [ ] Repository pattern: `StorageProvider` interface already exists
-- [ ] Auth adapter pattern: abstract Google IdP behind an `AuthProvider` interface
-- [ ] IaC with Terraform modules parameterized for GCP/AWS/Azure
-- [ ] Environment-based configuration (no hard-coded GCP references)
+### 2B: Google Drive Storage Provider
+
+- [ ] `GoogleDriveStorageProvider` implementing `StorageProvider` interface
+- [ ] File strategy: single JSON file (`portfolio.json`) in `appDataFolder`
+  - `drive.files.list` with `spaces=appDataFolder` to find existing file
+  - `drive.files.create` / `drive.files.update` for save
+  - `drive.files.get` with `alt=media` for load
+- [ ] API calls via `fetch` directly to `googleapis.com/drive/v3/files` (no gapi SDK bloat)
+- [ ] Error handling: 401 → re-auth, 403 → scope missing, 5xx → retry with backoff
+
+### 2C: Sync Strategy (localStorage ↔ Google Drive)
+
+- [ ] **Offline-first**: localStorage is always the primary read/write layer
+- [ ] **Background sync**: after every `save()` to localStorage, queue a Drive upload
+  - Debounce writes (e.g., 3-second delay) to avoid hammering the API
+  - Show sync status indicator: "Synced", "Syncing...", "Offline"
+- [ ] **Startup merge**: on app load, if signed in:
+  1. Load from localStorage (instant)
+  2. Fetch from Drive in background
+  3. If Drive data is newer (compare `modifiedTime`), merge or replace
+  4. If localStorage data is newer, push to Drive
+- [ ] **Conflict resolution**: use `modifiedTime` metadata on the Drive file
+  - Simple last-write-wins for v1 (acceptable since single user)
+  - Future: per-field merge if needed
+- [ ] **First-time sync**: if Drive has data but localStorage is empty (new device),
+  pull from Drive and populate localStorage
+- [ ] **Migration**: existing localStorage-only users get prompted to "Enable sync"
+  with a one-click Google sign-in; their existing data uploads to Drive
+
+### 2D: UX Integration
+
+- [ ] Sync status badge in the header/nav bar (cloud icon with state)
+- [ ] Settings section: "Google Drive Sync" with sign-in/sign-out
+- [ ] "Last synced: 2 minutes ago" timestamp
+- [ ] Manual "Sync Now" button for impatient users
+- [ ] Toast/notification on sync conflicts or errors
+- [ ] Onboarding: explain to new users that their data stays in their Google Drive
+
+## Phase 3: Hosting & Distribution (Optional)
+
+**Status: Not Started**
+
+The app can stay on GitHub Pages indefinitely. This phase is only needed for custom
+domain, better caching, or if we want a more polished distribution.
+
+- [ ] Custom domain setup (GitHub Pages CNAME or Cloudflare Pages)
+- [ ] CDN caching headers for static assets
+- [ ] OR: Dockerize + Cloud Run / Fly.io for custom domain with HTTPS
+  - Still a pure static SPA — no backend
+  - Terraform/Pulumi IaC if Cloud Run
+- [ ] App store considerations: PWA install prompts, iOS/Android add-to-homescreen
 
 ## Phase 4: Enhanced Features (Future)
 
@@ -184,31 +141,38 @@ Add a backend API, migrate storage to GCP, and implement Google identity managem
 - [ ] Stock price growth projections with Monte Carlo simulation
 - [ ] Vesting calendar view with notifications
 - [ ] Multi-currency support (if applicable)
-- [ ] Audit log / change history
-- [ ] Data sharing: generate read-only shareable links
+- [ ] Change history / undo (stored locally, synced via Drive)
 - [ ] Export to CSV/PDF for tax filing
+- [ ] Shareable program configs (non-sensitive structural data only, via URL or file)
 
 ## Technical Principles
 
-1. **Storage abstraction**: All data access goes through `StorageProvider` interface.
-   Implementations exist for localStorage (Phase 1) and will be added for
-   Firestore/Postgres (Phase 3). Swapping to AWS/Azure requires only a new
-   implementation of the same interface.
+1. **User-owned data**: Financial data never touches our servers. It lives in
+   localStorage (offline) and the user's own Google Drive app data folder (sync).
+   The developer has zero access to user portfolios. This is a deliberate
+   architectural choice — users should not trust a third party with their
+   financial data.
 
-2. **Auth abstraction**: Authentication will go through an `AuthProvider` interface
-   (to be created in Phase 3) so Google IdP can be swapped for AWS Cognito,
-   Azure AD B2C, or Auth0.
+2. **Storage abstraction**: All data access goes through `StorageProvider` interface.
+   Implementations: `LocalStorageProvider` (Phase 1), `GoogleDriveStorageProvider`
+   (Phase 2). The sync layer composes both — localStorage for speed, Drive for
+   persistence and cross-device access.
 
-3. **Config vs. Data separation**: Program structural rules (interest rates, vesting
+3. **Offline-first**: The app works fully without an internet connection or Google
+   sign-in. Google Drive sync is an opt-in enhancement, not a requirement.
+   localStorage is always the primary data layer.
+
+4. **Config vs. Data separation**: Program structural rules (interest rates, vesting
    patterns, grant bundles) live in `ProgramConfig`. User-specific choices (share
    counts, dates, loan decisions) reference ProgramConfig but can override defaults.
    This means program structure is entered once and reused across grants.
 
-4. **Infrastructure as Code**: All cloud resources managed via Terraform with
-   provider-agnostic modules where possible.
+5. **No backend**: The app is a pure static SPA. No API server, no database, no
+   server-side code. Authentication is purely client-side OAuth for Drive API access.
+   This minimizes attack surface and operational cost.
 
-5. **Test coverage**: 90%+ code coverage enforced in CI. All business logic
+6. **Test coverage**: 90%+ code coverage enforced in CI. All business logic
    (calculations, validation) is fully unit-tested.
 
-6. **Confidentiality**: No stock prices, vesting schedules, or employee-specific
+7. **Confidentiality**: No stock prices, vesting schedules, or employee-specific
    data is baked into the app. Users import their own data via JSON or manual entry.
