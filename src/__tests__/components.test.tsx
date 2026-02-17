@@ -602,6 +602,81 @@ describe('LoansPage', () => {
       expect(screen.getByText(/No loans added yet/)).toBeInTheDocument();
     });
   });
+
+  it('shows Refinance button only for active loans', async () => {
+    const data = samplePortfolio();
+    data.loans.push({
+      id: 'l2',
+      type: 'tax',
+      principalAmount: 500,
+      annualInterestRate: 0.03,
+      originationDate: '2024-01-01',
+      maturityDate: '2034-01-01',
+      status: 'paid_off',
+      notes: 'Paid off loan',
+    } as Loan);
+
+    renderWithProviders(<LoansPage />, { data });
+    await waitFor(() => {
+      expect(screen.getByText('Purchase')).toBeInTheDocument();
+      expect(screen.getByText('Tax')).toBeInTheDocument();
+    });
+
+    // Active loan has Refinance button, paid off does not
+    const refinanceButtons = screen.getAllByText('Refinance');
+    expect(refinanceButtons).toHaveLength(1);
+  });
+
+  it('opens refinance form pre-filled from original loan', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<LoansPage />, { data: samplePortfolio() });
+
+    await waitFor(() => {
+      expect(screen.getByText('Purchase')).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByText('Refinance'));
+    expect(screen.getByText('Refinance Loan')).toBeInTheDocument();
+    expect(screen.getByText(/Creating a new loan to replace/)).toBeInTheDocument();
+    // Principal pre-filled from original
+    expect(screen.getByLabelText('Principal ($)')).toHaveValue(1000);
+    // Rate pre-filled
+    expect(screen.getByLabelText('Annual Interest Rate (decimal)')).toHaveValue(0.04);
+  });
+
+  it('submitting refinance creates new loan and marks old as refinanced', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<LoansPage />, { data: samplePortfolio() });
+
+    await waitFor(() => {
+      expect(screen.getByText('Purchase')).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByText('Refinance'));
+
+    // Update the rate and set maturity for new loan
+    fireEvent.change(screen.getByLabelText('Annual Interest Rate (decimal)'), {
+      target: { value: '0.03' },
+    });
+    fireEvent.change(screen.getByLabelText('Maturity Date'), {
+      target: { value: '2035-01-01' },
+    });
+
+    const submitBtn = screen.getAllByRole('button', { name: 'Refinance' })
+      .find((el) => el.getAttribute('type') === 'submit')!;
+    await user.click(submitBtn);
+
+    await waitFor(() => {
+      // Form should close
+      expect(screen.queryByText('Refinance Loan')).not.toBeInTheDocument();
+      // Old loan should be marked refinanced
+      expect(screen.getByText('Refinanced')).toBeInTheDocument();
+      // Refinance chain shown on both cards
+      expect(screen.getByText(/Replaced by/)).toBeInTheDocument();
+      // "Refinanced from" appears in both the chain link and the note
+      expect(screen.getAllByText(/Refinanced from/).length).toBeGreaterThanOrEqual(1);
+    });
+  });
 });
 
 // ── ConfigPage tests ───────────────────────────────────────────

@@ -590,6 +590,12 @@ table:not(.tranche-table) td {
   color: var(--text-muted);
 }
 
+.refinance-link {
+  font-size: 0.75rem;
+  color: var(--warning);
+  font-style: italic;
+}
+
 /* ── Messages & Errors ─────────────────────────────────────── */
 .error-list {
   background: var(--negative-soft);

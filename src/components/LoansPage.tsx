@@ -8,6 +8,9 @@ import {
   LOAN_STATUS_LABELS,
 } from '../models';
 import type { Loan, LoanType, LoanStatus } from '../models';
+import { today } from '../utils/date';
+
+type FormMode = 'add' | 'edit' | 'refinance';
 
 function emptyFormState(): Omit<Loan, 'id'> {
   return {
@@ -27,7 +30,9 @@ function emptyFormState(): Omit<Loan, 'id'> {
 export function LoansPage() {
   const { portfolio, dispatch, loading } = usePortfolio();
   const [showForm, setShowForm] = useState(false);
+  const [formMode, setFormMode] = useState<FormMode>('add');
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [refinancingId, setRefinancingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyFormState());
   const [errors, setErrors] = useState<string[]>([]);
 
@@ -35,6 +40,8 @@ export function LoansPage() {
 
   function handleEdit(loan: Loan) {
     setEditingId(loan.id);
+    setRefinancingId(null);
+    setFormMode('edit');
     setForm({
       type: loan.type,
       principalAmount: loan.principalAmount,
@@ -46,6 +53,26 @@ export function LoansPage() {
       refinancedFromId: loan.refinancedFromId ?? '',
       status: loan.status,
       notes: loan.notes ?? '',
+    });
+    setShowForm(true);
+    setErrors([]);
+  }
+
+  function handleRefinance(loan: Loan) {
+    setEditingId(null);
+    setRefinancingId(loan.id);
+    setFormMode('refinance');
+    setForm({
+      type: loan.type,
+      principalAmount: loan.principalAmount,
+      annualInterestRate: loan.annualInterestRate,
+      originationDate: today(),
+      maturityDate: '',
+      relatedGrantId: loan.relatedGrantId ?? '',
+      parentLoanId: '',
+      refinancedFromId: loan.id,
+      status: 'active',
+      notes: `Refinanced from ${LOAN_TYPE_LABELS[loan.type]} loan`,
     });
     setShowForm(true);
     setErrors([]);
@@ -72,7 +99,19 @@ export function LoansPage() {
       return;
     }
 
-    if (editingId) {
+    if (formMode === 'refinance' && refinancingId) {
+      // Create new loan and mark old one as refinanced
+      const newLoan = createLoan(loanData);
+      dispatch({ type: 'ADD_LOAN', loan: newLoan });
+
+      const oldLoan = portfolio.loans.find((l) => l.id === refinancingId);
+      if (oldLoan) {
+        dispatch({
+          type: 'UPDATE_LOAN',
+          loan: { ...oldLoan, status: 'refinanced' },
+        });
+      }
+    } else if (editingId) {
       dispatch({
         type: 'UPDATE_LOAN',
         loan: { id: editingId, ...loanData },
@@ -86,10 +125,32 @@ export function LoansPage() {
 
   function resetForm() {
     setShowForm(false);
+    setFormMode('add');
     setEditingId(null);
+    setRefinancingId(null);
     setForm(emptyFormState());
     setErrors([]);
   }
+
+  function getLoanLabel(loanId: string): string {
+    const loan = portfolio.loans.find((l) => l.id === loanId);
+    if (!loan) return loanId.slice(0, 8);
+    return `${LOAN_TYPE_LABELS[loan.type]} ($${loan.principalAmount.toLocaleString()})`;
+  }
+
+  const formTitle =
+    formMode === 'refinance'
+      ? 'Refinance Loan'
+      : formMode === 'edit'
+        ? 'Edit Loan'
+        : 'New Loan';
+
+  const submitLabel =
+    formMode === 'refinance'
+      ? 'Refinance'
+      : formMode === 'edit'
+        ? 'Update Loan'
+        : 'Add Loan';
 
   return (
     <div className="page">
@@ -104,7 +165,14 @@ export function LoansPage() {
 
       {showForm && (
         <form onSubmit={handleSubmit} className="card form">
-          <h3>{editingId ? 'Edit Loan' : 'New Loan'}</h3>
+          <h3>{formTitle}</h3>
+
+          {formMode === 'refinance' && refinancingId && (
+            <p className="note">
+              Creating a new loan to replace: <strong>{getLoanLabel(refinancingId)}</strong>.
+              The original will be marked as refinanced.
+            </p>
+          )}
 
           {errors.length > 0 && (
             <div className="error-list">
@@ -237,18 +305,20 @@ export function LoansPage() {
               />
             </div>
 
-            <div className="form-field">
-              <label htmlFor="refinancedFromId">Refinanced From ID</label>
-              <input
-                id="refinancedFromId"
-                type="text"
-                value={form.refinancedFromId}
-                onChange={(e) =>
-                  setForm({ ...form, refinancedFromId: e.target.value })
-                }
-                placeholder="If refinancing another loan"
-              />
-            </div>
+            {formMode !== 'refinance' && (
+              <div className="form-field">
+                <label htmlFor="refinancedFromId">Refinanced From ID</label>
+                <input
+                  id="refinancedFromId"
+                  type="text"
+                  value={form.refinancedFromId}
+                  onChange={(e) =>
+                    setForm({ ...form, refinancedFromId: e.target.value })
+                  }
+                  placeholder="If refinancing another loan"
+                />
+              </div>
+            )}
 
             <div className="form-field form-field--full">
               <label htmlFor="loanNotes">Notes</label>
@@ -263,7 +333,7 @@ export function LoansPage() {
 
           <div className="form-actions">
             <button type="submit" className="btn btn-primary">
-              {editingId ? 'Update Loan' : 'Add Loan'}
+              {submitLabel}
             </button>
             <button type="button" onClick={resetForm} className="btn">
               Cancel
@@ -280,42 +350,69 @@ export function LoansPage() {
         </div>
       ) : (
         <div className="card-list">
-          {portfolio.loans.map((loan) => (
-            <div key={loan.id} className="card">
-              <div className="card-header">
-                <strong>{LOAN_TYPE_LABELS[loan.type]}</strong>
-                <span
-                  className={`badge badge--${loan.status}`}
-                >
-                  {LOAN_STATUS_LABELS[loan.status]}
-                </span>
+          {portfolio.loans.map((loan) => {
+            const refinancedFrom = loan.refinancedFromId
+              ? portfolio.loans.find((l) => l.id === loan.refinancedFromId)
+              : null;
+            const refinancedTo = portfolio.loans.find(
+              (l) => l.refinancedFromId === loan.id
+            );
+
+            return (
+              <div key={loan.id} className="card">
+                <div className="card-header">
+                  <strong>{LOAN_TYPE_LABELS[loan.type]}</strong>
+                  <span
+                    className={`badge badge--${loan.status}`}
+                  >
+                    {LOAN_STATUS_LABELS[loan.status]}
+                  </span>
+                </div>
+                <div className="card-body">
+                  <p>
+                    ${loan.principalAmount.toLocaleString()} @{' '}
+                    {(loan.annualInterestRate * 100).toFixed(2)}%
+                  </p>
+                  <p>
+                    {loan.originationDate} &rarr; {loan.maturityDate}
+                  </p>
+                  {refinancedFrom && (
+                    <p className="refinance-link">
+                      Refinanced from: {LOAN_TYPE_LABELS[refinancedFrom.type]} (${refinancedFrom.principalAmount.toLocaleString()} @ {(refinancedFrom.annualInterestRate * 100).toFixed(2)}%)
+                    </p>
+                  )}
+                  {refinancedTo && (
+                    <p className="refinance-link">
+                      Replaced by: {LOAN_TYPE_LABELS[refinancedTo.type]} (${refinancedTo.principalAmount.toLocaleString()} @ {(refinancedTo.annualInterestRate * 100).toFixed(2)}%)
+                    </p>
+                  )}
+                  {loan.notes && <p className="note">{loan.notes}</p>}
+                </div>
+                <div className="card-actions">
+                  {loan.status === 'active' && (
+                    <button
+                      onClick={() => handleRefinance(loan)}
+                      className="btn btn-small"
+                    >
+                      Refinance
+                    </button>
+                  )}
+                  <button
+                    onClick={() => handleEdit(loan)}
+                    className="btn btn-small"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(loan.id)}
+                    className="btn btn-small btn-danger"
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
-              <div className="card-body">
-                <p>
-                  ${loan.principalAmount.toLocaleString()} @{' '}
-                  {(loan.annualInterestRate * 100).toFixed(2)}%
-                </p>
-                <p>
-                  {loan.originationDate} &rarr; {loan.maturityDate}
-                </p>
-                {loan.notes && <p className="note">{loan.notes}</p>}
-              </div>
-              <div className="card-actions">
-                <button
-                  onClick={() => handleEdit(loan)}
-                  className="btn btn-small"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleDelete(loan.id)}
-                  className="btn btn-small btn-danger"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
